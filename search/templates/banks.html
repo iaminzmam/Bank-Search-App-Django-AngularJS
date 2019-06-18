@@ -1,0 +1,200 @@
+
+
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>Bank Search</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+		<meta charset="utf-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+	    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+	    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+	</head>
+	<body ng-app="bankApp">
+	{% verbatim %}
+
+		<div class=""  ng-controller="cityCtrl" >
+
+			<div style="display: block; align-items: center;"><h3 style="text-align: center; font-style: bold; color: blue;">			Bank Search App</h3>
+					<p style="text-align: center;">By: Inzamamul Haque <br>Email: iaminzmam@gmail.com</p>
+			</div>
+			
+	            <form class="form-inline" style="margin: 20px 10px 0 10%">
+	            	<select class="form-control" ng-change="changeCity()" ng-model="cityVar" >
+	            		<option value="">Select City</option>
+		                <option  value="VARANASI">VARANASI</option>
+		                <option  value="DEORIA">DEORIA</option>
+		                <option  value="BHARATPUR">BHARATPUR</option>
+		                <option  value="BARABANKI">BARABANKI</option>
+		                <option  value="FAIZABAD">FAIZABAD</option>
+
+		              </select>
+	        		<input class="form-control" type="text" placeholder="Search....." ng-model="searching">
+	        		<button class="btn btn-success" ng-click="showFav()">Show Favourite</button>
+	        		<div style="display: inline-block; float: right">
+	        			
+
+	        			<label for="itemsperpage">No of items Showing:</label>
+	        			<input class="form-control" name="itemsperpage" type="number" placeholder="All" value="30" ng-model="itemsnum">
+	        			
+	        		</div>      
+	            </form>
+
+        	
+        	<br>
+        	
+
+		
+
+		<div class="container" id="banktable" > 
+
+			<h3>Banks in Your City</h3>
+
+			<table class="table table-bordered table-hover">
+				  <thead>
+				    <tr class="info">
+				       <th scope="col">Fav</th>
+				      <th scope="col">#</th>
+				      <th scope="col">Bank Name</th>
+				      <th scope="col">ifsc</th>
+				      <th scope="col">Branch</th>
+				      <th scope="col">Bank id</th>
+				      <th scope="col">City</th>
+				      <th scope="col">Address</th>
+				      <th scope="col">District</th>
+				      <th scope="col">State</th>
+				    </tr>
+				  </thead>
+				  <tbody>
+				    <tr dir-paginate="x in banklist | filter:searching | itemsPerPage:itemsnum">
+				      <th scope="row" ng-click="addToFav(x)">Add</th>
+				      <th scope="row">{{$index+1}}</th>
+				      <td><a ng-href="bank/?id={{x.bank_id}}&&name={{x.bank_name}}&&ifsc={{x.ifsc}}&&branch={{x.branch}}&&city={{x.city}}&&address={{x.address}}&&dist={{x.district}}&&state={{x.state}}">{{x.bank_name}}</a></td>
+				      <td>{{x.ifsc}}</td>
+				      <td>{{x.branch}}</td>
+				      <td>{{x.bank_id}}</td>
+				      <td>{{x.city}}</td>
+				      <td>{{x.address}}</td>
+				      <td>{{x.district}}</td>
+				      <td>{{x.state}}</td>
+				    </tr>
+				    
+				  </tbody>
+
+				  <dir-pagination-controls
+				    [max-size="5"]
+				    [direction-links="true"]
+				    [boundary-links="true"]
+				    [on-page-change=""]
+				    [pagination-id=""]
+				    [template-url=""]
+				    [auto-hide=""]>
+				    </dir-pagination-controls>
+				</table>
+		
+		
+
+		</div>
+
+
+		<div class="container" id="favtable" style="display: none"> 
+
+
+			<h3>Your Favourite Banks</h3>
+
+			
+
+			<table class="table table-bordered table-hover">
+				  <thead>
+				    <tr class="info">
+				       
+				      <th scope="col">#</th>
+				      <th scope="col">Bank Name</th>
+				      <th scope="col">ifsc</th>
+				      <th scope="col">Branch</th>
+				      <th scope="col">Bank id</th>
+				      <th scope="col">City</th>
+				      <th scope="col">Address</th>
+				      <th scope="col">District</th>
+				      <th scope="col">State</th>
+				    </tr>
+				  </thead>
+				  <tbody>
+				    <tr ng-repeat="y in favlist">
+				      
+				      <th scope="row">{{$index+1}}</th>
+				      <td>{{y.bank_name}}</td>
+				      <td>{{y.ifsc}}</td>
+				      <td>{{y.branch}}</td>
+				      <td>{{y.bank_id}}</td>
+				      <td>{{y.city}}</td>
+				      <td>{{y.address}}</td>
+				      <td>{{y.district}}</td>
+				      <td>{{y.state}}</td>
+				    </tr>
+				    
+				  </tbody>
+
+				</table>
+		
+		{% endverbatim %}
+
+		</div>
+
+	</div>
+	{% load staticfiles %}
+		<script src="{% static 'search/dirPagination.js' %}"></script>
+
+
+
+		<script>
+		var app = angular.module('bankApp', ['angularUtils.directives.dirPagination']);
+
+		app.controller('cityCtrl', cityfunc);
+		function cityfunc($scope, $http) {
+			$scope.cityVar = "";
+			$scope.banklist = [];
+			$scope.favlist = [];
+			var favItem =  angular.fromJson(localStorage["favBank"]) || [];
+			console.log(favItem);
+			$scope.showFav = function() {
+				if (event.srcElement.innerHTML == 'Show Favourite') {
+					document.getElementById("banktable").style.display = "none";
+					document.getElementById("favtable").style.display = "block";
+					event.srcElement.innerHTML = 'Hide Favourite';
+					$scope.favlist = favItem;
+				}else{
+					document.getElementById("favtable").style.display = "none";
+					document.getElementById("banktable").style.display = "block";
+					event.srcElement.innerHTML = 'Show Favourite';
+					$scope.favlist = [];
+				}
+
+			}
+			$scope.addToFav =  function(x) {
+				event.srcElement.innerHTML = 'Added';
+				favItem.push(x);
+				localStorage['favBank'] = angular.toJson(favItem);
+			}
+			$scope.postData = function() {
+				$http.post('/Users/inz/Desktop/fyle.pdf', favItem);
+			}
+
+			
+			$scope.changeCity = function() {
+		    	$http.get("https://vast-shore-74260.herokuapp.com/banks?city=" + $scope.cityVar, {cache:true}).then(function (response) {$scope.banklist = response.data;});
+			}
+
+		}
+
+
+
+		
+		</script>
+
+
+	</body>
+</html>
