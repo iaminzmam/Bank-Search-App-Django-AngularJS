@@ -18,6 +18,3 @@ def bankdetails(request):
     state = request.GET.get('state')
     context = {'id': id, 'name': name, 'ifsc': ifsc, 'branch': branch, 'city':city, 'address': address, 'dist': disrict, 'state': state}
     return render(request, 'bankdetail.html', context)
-
-def bank(request, bank_id):
-    return HttpResponse("<h3>your bank id is: " + bank_id)
