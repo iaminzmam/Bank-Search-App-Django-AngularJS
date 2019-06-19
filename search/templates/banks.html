@@ -70,7 +70,7 @@
 				  </thead>
 				  <tbody>
 				    <tr dir-paginate="x in banklist | filter:searching | itemsPerPage:itemsnum">
-				      <th scope="row" ng-click="addToFav(x)">Add</th>
+				      <th id="{{x.ifsc}}" scope="row" ng-click="addToFav(x)">Add</th>
 				      <th scope="row">{{$index+1}}</th>
 				      <td><a ng-href="bank/?id={{x.bank_id}}&&name={{x.bank_name}}&&ifsc={{x.ifsc}}&&branch={{x.branch}}&&city={{x.city}}&&address={{x.address}}&&dist={{x.district}}&&state={{x.state}}">{{x.bank_name}}</a></td>
 				      <td>{{x.ifsc}}</td>
@@ -175,17 +175,40 @@
 
 			}
 			$scope.addToFav =  function(x) {
-				event.srcElement.innerHTML = 'Added';
-				favItem.push(x);
-				localStorage['favBank'] = angular.toJson(favItem);
+				if(event.srcElement.innerHTML == 'Add'){
+					event.srcElement.innerHTML = 'Remove';
+					favItem.push(x);
+					localStorage['favBank'] = angular.toJson(favItem);
+				}
+				else if(event.srcElement.innerHTML == 'Remove') {
+					for(var e of favItem) {
+						if(e['ifsc'] == event.srcElement.id) {
+							var index = favItem.indexOf(e);
+							if (index > -1) {
+							  favItem.splice(index, 1);
+							  console.log(favItem);
+							}
+						}
+					}
+									
+					event.srcElement.innerHTML = 'Add';
+					localStorage['favBank'] = angular.toJson(favItem);
+				}
+				
 			}
-			$scope.postData = function() {
-				$http.post('/Users/inz/Desktop/fyle.pdf', favItem);
-			}
+			
 
 			
 			$scope.changeCity = function() {
-		    	$http.get("https://vast-shore-74260.herokuapp.com/banks?city=" + $scope.cityVar, {cache:true}).then(function (response) {$scope.banklist = response.data;});
+		    	$http.get("https://vast-shore-74260.herokuapp.com/banks?city=" + $scope.cityVar, {cache:true}).then(function (response) {
+									$scope.banklist = response.data;
+									setTimeout(function(){
+								    			for(var each of favItem){
+								    				if(document.getElementById(each['ifsc'])){
+								    					document.getElementById(each['ifsc']).innerHTML="Remove";
+								    				}
+								    			}
+								    		},700);});
 			}
 
 		}
